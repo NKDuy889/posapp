@@ -7,35 +7,59 @@
       COUNT
     </button>
     <div class="grid grid-cols-2 gap-3">
-      <p>Min: <a-input-number class="!w-[300px]" v-model:value="minInMonth"/></p>
-      <p>Max: <a-input-number class="!w-[300px]" v-model:value="maxInMonth"/></p>
+      <p>Min:
+        <a-input-number class="!w-[300px]" v-model:value="minInMonth"/>
+      </p>
+      <p>Max:
+        <a-input-number class="!w-[300px]" v-model:value="maxInMonth"/>
+      </p>
     </div>
     <div v-for="(e, index) in arrMoney" :key="index">
-      <div class="grid grid-cols-2 gap-3">
-        <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-2 gap-5">
+        <div class="grid grid-cols-4 gap-3">
           <div>
-            Tk: <a-input-number class="!w-[300px]" v-model:value="e.tk"/>
+            Tk{{ index + 1 }}:
+            <a-input-number class="!w-[300px]" v-model:value="e.tk"/>
           </div>
           <div>
-            Tm: <a-input-number class="!w-[300px]" v-model:value="e.tm"/>
+            Tm:
+            <a-input-number class="!w-[300px]" v-model:value="e.tm"/>
+          </div>
+          <div>
+            Tk{{ index + 1 }}:
+            <a-input-number class="!w-[300px]" v-model:value="e.zp"/>
+          </div>
+          <div>
+            Tm:
+            <a-input-number class="!w-[300px]" v-model:value="e.tb"/>
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-3" v-if="arrMoneyInRange.length">
+        <div class="grid grid-cols-4 gap-3" v-if="arrMoneyInRange.length">
           <div>
-            Tk: <a-input-number class="!w-[300px]" v-model:value="arrMoneyInRange[index].tk"/>
+            Tk:
+            <a-input-number class="!w-[300px]" v-model:value="arrMoneyInRange[index].tk"/>
           </div>
           <div>
-            Tm: <a-input-number class="!w-[300px]" v-model:value="arrMoneyInRange[index].tm"/>
+            Tm:
+            <a-input-number class="!w-[300px]" v-model:value="arrMoneyInRange[index].tm"/>
+          </div>
+          <div>
+            Tk:
+            <a-input-number class="!w-[300px]" v-model:value="arrMoneyInRange[index].zp"/>
+          </div>
+          <div>
+            Tm:
+            <a-input-number class="!w-[300px]" v-model:value="arrMoneyInRange[index].tb"/>
           </div>
         </div>
       </div>
     </div>
     <div class="grid grid-cols-2">
       <div>
-        Tổng tháng: {{getToTal(arrMoney)}}
+        Tổng tháng: {{ getToTal(arrMoney) }}
       </div>
       <div v-if="arrMoneyInRange.length">
-        Tổng mới: {{getToTal(arrMoneyInRange)}}
+        Tổng mới: {{ getToTal(arrMoneyInRange) }}
       </div>
     </div>
   </div>
@@ -46,57 +70,74 @@
 import {ref} from "vue";
 
 const arrMoney = ref([
-  { tk: 10000, tm: 10000 },
-  { tk: 10000, tm: 10000 },
-  { tk: 10000, tm: 10000 },
+  {tk: 218000, tm: 8061000, zp: 120000, tb: 0},
+  {tk: 10000, tm: 5098000, zp: 0, tb: 120000},
+  {tk: 202341, tm: 3985000, zp: 0, tb: 0},
+  {tk: 90000, tm: 6605000, zp: 0, tb: 0},
+  {tk: 10000, tm: 7092000, zp: 0, tb: 0},
+  {tk: 10000, tm: 4516000, zp: 0, tb: 0},
+  {tk: 10000, tm: 4431000, zp: 0, tb: 0},
+  {tk: 10000, tm: 4623000, zp: 0, tb: 0},
+  {tk: 10000, tm: 4497000, zp: 0, tb: 0},
+  {tk: 911000, tm: 4840000, zp: 0, tb: 0},
+  {tk: 10000, tm: 6396000, zp: 0, tb: 0},
+  {tk: 10000, tm: 6890000, zp: 0, tb: 0},
+  {tk: 10000, tm: 2698000, zp: 0, tb: 0},
+  {tk: 10000, tm: 4073000, zp: 0, tb: 0},
+  {tk: 10000, tm: 4939000, zp: 0, tb: 0},
+  {tk: 33000, tm: 6169000, zp: 0, tb: 0},
+  {tk: 10000, tm: 4634000, zp: 0, tb: 0},
+  {tk: 10000, tm: 6988000, zp: 0, tb: 0},
+  {tk: 10000, tm: 7690000, zp: 0, tb: 0},
+  {tk: 10000, tm: 5290000, zp: 0, tb: 0},
+  {tk: 10000, tm: 5405000, zp: 0, tb: 0},
+  {tk: 10000, tm: 5987000, zp: 0, tb: 0},
+  {tk: 10000, tm: 6057000, zp: 0, tb: 0},
+  {tk: 10000, tm: 6772000, zp: 0, tb: 0},
+  {tk: 10000, tm: 2605000, zp: 0, tb: 0},
 ]);
 
 const minInMonth = ref(10000000);
 const maxInMonth = ref(15000000);
 
-const generateMoneyInRange = (arr, min, max) => {
-  let result = [];
-  let total = 0;
+function scaleDownComplexMoneyArray(sourceArr, minTotal, maxTotal, minValue = 10000) {
+  const totalMax = sourceArr.reduce((sum, item) =>
+      sum + item.tk + item.tm + item.zp + item.tb, 0
+  );
 
-  // Tạo bản nháp đầu tiên
-  for (let i = 0; i < arr.length; i++) {
-    const { tk, tm } = arr[i];
+  if (totalMax < minTotal) {
+    throw new Error("Không thể đạt tổng yêu cầu với dữ liệu hiện tại.");
+  }
 
-    const generateValue = (original) => {
-      const minVal = 10001;
-      const ratio = Math.random() * 0.4 + 0.2; // lấy từ 20% đến 60%
-      let base = Math.round(original * ratio / 10000) * 10000;
-      let noise = Math.floor(Math.random() * 5000);
-      let value = Math.max(minVal, Math.min(original, base + noise));
-      return value;
+  const minRatio = minTotal / totalMax;
+  const maxRatio = maxTotal / totalMax;
+  const scaleRatio = Math.random() * (maxRatio - minRatio) + minRatio;
+
+  const scaledArr = sourceArr.map(item => {
+    const scaleField = (fieldVal) => {
+      if (fieldVal === 0) return 0;
+      const scaled = Math.floor(fieldVal * scaleRatio);
+      return Math.max(minValue, Math.min(scaled, fieldVal));
     };
 
-    const newTk = generateValue(tk);
-    const newTm = generateValue(tm);
-    result.push({ tk: newTk, tm: newTm });
-    total += newTk + newTm;
+    return {
+      tk: scaleField(item.tk),
+      tm: scaleField(item.tm),
+      zp: scaleField(item.zp),
+      tb: scaleField(item.tb),
+    };
+  });
+
+  const total = scaledArr.reduce((sum, item) =>
+      sum + item.tk + item.tm + item.zp + item.tb, 0
+  );
+
+  if (total >= minTotal && total <= maxTotal) {
+    return scaledArr;
   }
 
-  // Scale lại nếu tổng vượt max hoặc nhỏ hơn min
-  if (total < min || total > max) {
-    const scale = Math.min(max / total, 1); // chỉ scale xuống
-    total = 0;
-
-    result = result.map((item, index) => {
-      const newTk = Math.max(
-          10001,
-          Math.min(arr[index].tk, Math.round(item.tk * scale))
-      );
-      const newTm = Math.max(
-          10001,
-          Math.min(arr[index].tm, Math.round(item.tm * scale))
-      );
-      total += newTk + newTm;
-      return { tk: newTk, tm: newTm };
-    });
-  }
-
-  return (total >= min && total <= max) ? result : generateMoneyInRange(arr, min, max); // nếu chưa hợp lệ thì thử lại
+  // Thử lại nếu chưa đạt yêu cầu
+  return scaleDownComplexMoneyArray(sourceArr, minTotal, maxTotal, minValue);
 }
 
 const arrMoneyInRange = ref([])
@@ -106,10 +147,8 @@ const onShow = () => {
   if (total < maxInMonth.value) {
     return
   }
-  console.log(arrMoney.value)
-  arrMoneyInRange.value = generateMoneyInRange(arrMoney.value, minInMonth.value, maxInMonth.value)
+  arrMoneyInRange.value = scaleDownComplexMoneyArray(arrMoney.value, minInMonth.value, maxInMonth.value)
   console.log(arrMoneyInRange.value)
-  console.log(getToTal(arrMoney.value))
 }
 
 const getToTal = (arr = []) => {
